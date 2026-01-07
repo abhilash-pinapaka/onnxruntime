@@ -180,14 +180,12 @@ class SessionScope {
     bool session_profiling_enabled = session_state_.Profiler().IsEnabled();
     bool run_profiling_enabled = run_profiler_ && run_profiler_->IsEnabled();
 
-    if (session_profiling_enabled || run_profiling_enabled) {
-      auto now = std::chrono::high_resolution_clock::now();
-      if (session_profiling_enabled) {
-        session_start_ = session_state_.Profiler().Start(now);
-      }
-      if (run_profiling_enabled) {
-        run_profiler_start_ = run_profiler_->Start(now);
-      }
+    auto now = std::chrono::high_resolution_clock::now();
+    if (session_profiling_enabled) {
+      session_start_ = session_state_.Profiler().Start(now);
+    }
+    if (run_profiling_enabled) {
+      run_profiler_start_ = run_profiler_->Start(now);
     }
 
     auto& logger = session_state_.Logger();
@@ -238,14 +236,12 @@ class SessionScope {
     bool session_profiling_enabled = session_state_.Profiler().IsEnabled();
     bool run_profiling_enabled = run_profiler_ && run_profiler_->IsEnabled();
 
-    if (session_profiling_enabled || run_profiling_enabled) {
-      auto now = std::chrono::high_resolution_clock::now();
-      if (session_profiling_enabled) {
-        session_state_.Profiler().EndTimeAndRecordEvent(profiling::SESSION_EVENT, "SequentialExecutor::Execute", session_start_, now);
-      }
-      if (run_profiling_enabled) {
-        run_profiler_->EndTimeAndRecordEvent(profiling::SESSION_EVENT, "SequentialExecutor::Execute", run_profiler_start_, now);
-      }
+    auto now = std::chrono::high_resolution_clock::now();
+    if (session_profiling_enabled) {
+      session_state_.Profiler().EndTimeAndRecordEvent(profiling::SESSION_EVENT, "SequentialExecutor::Execute", session_start_, now);
+    }
+    if (run_profiling_enabled) {
+      run_profiler_->EndTimeAndRecordEvent(profiling::SESSION_EVENT, "SequentialExecutor::Execute", run_profiler_start_, now);
     }
 
 #if !defined(ORT_MINIMAL_BUILD) && defined(ORT_MEMORY_PROFILE)

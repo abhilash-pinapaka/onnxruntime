@@ -410,7 +410,7 @@ ITuningContext* CUDAExecutionProvider::GetTuningContext() const {
   return const_cast<cuda::tunable::CudaTuningContext*>(&tuning_context_);
 }
 
-std::unique_ptr<profiling::EpProfiler> CUDAExecutionProvider::GetProfiler() {
+std::unique_ptr<profiling::EpProfiler> CUDAExecutionProvider::GetProfiler(bool /*enable_profiling*/) {
   return std::make_unique<profiling::CudaProfiler>();
 }
 

@@ -117,7 +117,7 @@ class CUDAExecutionProvider : public IExecutionProvider {
 
   ITuningContext* GetTuningContext() const override;
 
-  std::unique_ptr<profiling::EpProfiler> GetProfiler() override;
+  std::unique_ptr<profiling::EpProfiler> GetProfiler(bool enable_profiling) override;
 
   bool IsGraphCaptureEnabled() const override;
   bool IsGraphCaptured(CudaGraphAnnotation_t graph_annotation_id) const override;

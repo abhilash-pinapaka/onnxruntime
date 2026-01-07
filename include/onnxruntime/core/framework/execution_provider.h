@@ -356,7 +356,7 @@ class IExecutionProvider {
     return logger_;
   }
 
-  virtual std::unique_ptr<profiling::EpProfiler> GetProfiler() {
+  virtual std::unique_ptr<profiling::EpProfiler> GetProfiler(bool /*enable_profiling*/) {
     return {};
   }
 

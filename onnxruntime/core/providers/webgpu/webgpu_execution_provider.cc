@@ -957,13 +957,29 @@ WebGpuExecutionProvider::~WebGpuExecutionProvider() {
   WebGpuContextFactory::ReleaseContext(context_id_);
 }
 
-std::unique_ptr<profiling::EpProfiler> WebGpuExecutionProvider::GetProfiler() {
-  return std::make_unique<WebGpuProfiler>(context_);
+namespace {
+thread_local webgpu::WebGpuProfiler* t_current_profiler = nullptr;
+}
+
+std::unique_ptr<profiling::EpProfiler> WebGpuExecutionProvider::GetProfiler(bool enable_profiling) {
+  auto p = std::make_unique<WebGpuProfiler>(context_);
+  if (enable_profiling) {
+    t_current_profiler = p.get();
+  } else if (!session_profiler_) {
+    // If not for a run, it's for the session (RegisterExecutionProvider)
+    session_profiler_ = p.get();
+  }
+  return p;
 }
 
 Status WebGpuExecutionProvider::OnRunStart(const onnxruntime::RunOptions& run_options) {
   if (context_.ValidationMode() >= ValidationMode::Basic) {
     context_.PushErrorScope();
+  }
+
+  // Session-level profiling handling if needed
+  if (run_options.enable_profiling || (session_profiler_ && session_profiler_->Enabled())) {
+    context_.StartProfiling();
   }
 
   if (IsGraphCaptureEnabled()) {
@@ -984,7 +1000,7 @@ Status WebGpuExecutionProvider::OnRunStart(const onnxruntime::RunOptions& run_op
   return Status::OK();
 }
 
-Status WebGpuExecutionProvider::OnRunEnd(bool /* sync_stream */, const onnxruntime::RunOptions& /* run_options */) {
+Status WebGpuExecutionProvider::OnRunEnd(bool /* sync_stream */, const onnxruntime::RunOptions& run_options) {
   context_.Flush(BufferManager());
 
   if (IsGraphCaptureEnabled() && !IsGraphCaptured(m_current_graph_annotation_id)) {
@@ -997,17 +1013,24 @@ Status WebGpuExecutionProvider::OnRunEnd(bool /* sync_stream */, const onnxrunti
     }
   }
 
-  if (context_.IsProfilingEnabled()) {
-    context_.CollectProfilingData();
+  std::vector<WebGpuProfiler*> profilers;
+  if (session_profiler_ && session_profiler_->Enabled()) {
+    profilers.push_back(session_profiler_);
+  }
+
+  if (run_options.enable_profiling && t_current_profiler) {
+    if (t_current_profiler->Enabled()) {
+      profilers.push_back(t_current_profiler);
+    }
+    t_current_profiler = nullptr;
+  }
+
+  if (!profilers.empty()) {
+    context_.CollectProfilingData(profilers);
   }
 
   context_.OnRunEnd();
-
-  if (context_.ValidationMode() >= ValidationMode::Basic) {
-    return context_.PopErrorScope();
-  } else {
-    return Status::OK();
-  }
+  return Status::OK();
 }
 
 bool WebGpuExecutionProvider::IsGraphCaptureEnabled() const {

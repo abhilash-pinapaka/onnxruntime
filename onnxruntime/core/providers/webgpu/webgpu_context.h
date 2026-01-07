@@ -160,7 +160,7 @@ class WebGpuContext final {
   }
 
   void StartProfiling();
-  void CollectProfilingData();
+  void CollectProfilingData(const std::vector<WebGpuProfiler*>& profilers);
   void EndProfiling();
 
   void RegisterProfiler(WebGpuProfiler* profiler);

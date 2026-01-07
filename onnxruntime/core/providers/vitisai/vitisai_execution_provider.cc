@@ -141,7 +141,7 @@ common::Status VitisAIExecutionProvider::SetEpDynamicOptions(gsl::span<const cha
   return Status::OK();
 }
 
-std::unique_ptr<profiling::EpProfiler> VitisAIExecutionProvider::GetProfiler() {
+std::unique_ptr<profiling::EpProfiler> VitisAIExecutionProvider::GetProfiler(bool /*enable_profiling*/) {
   return std::make_unique<profiling::VitisaiProfiler>();
 }
 

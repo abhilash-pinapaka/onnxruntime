@@ -621,7 +621,7 @@ void WebGpuContext::StartProfiling() {
   }
 }
 
-void WebGpuContext::CollectProfilingData() {
+void WebGpuContext::CollectProfilingData(const std::vector<WebGpuProfiler*>& profilers) {
   if (!pending_queries_.empty()) {
     for (const auto& pending_query : pending_queries_) {
       const auto& pending_kernels = pending_query.kernels;
@@ -671,7 +671,7 @@ void WebGpuContext::CollectProfilingData() {
                                      static_cast<int64_t>(std::round((end_time - start_time) / 1000.0)),
                                      event_args);
 
-        for (auto* profiler : profilers_) {
+        for (auto* profiler : profilers) {
           profiler->Events().emplace_back(event);
         }
       }
