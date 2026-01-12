@@ -500,10 +500,12 @@ examples = [path.join("datasets", x) for x in examples_names]
 extra = ["LICENSE", "ThirdPartyNotices.txt", "Privacy.md", "Qualcomm_LICENSE.pdf"]
 
 header_files = []
-session_headers_src = path.join("include", "onnxruntime", "core", "session")
+# Headers are copied by CMake to onnxruntime/include during build
+session_headers_src = path.join("onnxruntime", "include", "onnxruntime", "core", "session")
 if path.isdir(session_headers_src):
-    header_pattern = path.join("include", "onnxruntime", "core", "session", "*.h")
+    header_pattern = path.join("onnxruntime", "include", "onnxruntime", "core", "session", "*.h")
     header_files_full_paths = glob(header_pattern)
+    # Use relative paths within the package for package_data
     header_files = [path.join("include", "onnxruntime", "core", "session", path.basename(h))
                     for h in header_files_full_paths]
 
